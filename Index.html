@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preciso de Ajuda com o Lucca 🍼</title>
+<style>
+  :root {
+    --pink: #6aa9ff;
+    --pink-dark: #3f7fe0;
+    --cream: #f2f7ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #e3edff 0%, #d1e0ff 50%, #c2d4ff 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 24px;
+  }
+  .card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 28px;
+    padding: 40px 28px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(224, 64, 122, 0.25);
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: var(--pink-dark);
+    margin: 0 0 8px;
+  }
+  p.sub {
+    color: #a35;
+    font-size: 0.95rem;
+    margin: 0 0 28px;
+  }
+  button#sendBtn {
+    border: none;
+    background: radial-gradient(circle at 30% 30%, #8ec0ff, var(--pink) 45%, var(--pink-dark) 100%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 60px 28px;
+    border-radius: 32px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+    box-shadow:
+      0 20px 40px rgba(63, 127, 224, 0.45),
+      0 0 0 6px rgba(255,255,255,0.5),
+      inset 0 -6px 12px rgba(0,0,0,0.12),
+      inset 0 6px 12px rgba(255,255,255,0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    letter-spacing: 0.3px;
+  }
+  button#sendBtn:active {
+    transform: scale(0.96);
+    box-shadow:
+      0 10px 20px rgba(63, 127, 224, 0.45),
+      0 0 0 6px rgba(255,255,255,0.5),
+      inset 0 -3px 8px rgba(0,0,0,0.15),
+      inset 0 3px 8px rgba(255,255,255,0.3);
+  }
+  button#sendBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .heart {
+    font-size: 3.6rem;
+    animation: pulse 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  #status {
+    margin-top: 18px;
+    font-size: 0.9rem;
+    min-height: 20px;
+    color: #2a4a8f;
+  }
+  #status.ok { color: #1a8f4c; font-weight: 600; }
+  select {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #f2b6c9;
+    background: white;
+    color: #a35;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <button id="sendBtn">
+      <span class="heart">🍼</span>
+      <span>Preciso de ajuda com o Lucca</span>
+    </button>
+
+    <div id="status"></div>
+    <div id="wakeStatus" style="margin-top:10px; font-size:0.75rem; color:#5a7ab0; opacity:0.8;"></div>
+  </div>
+
+<script>
+  // Tópico único do casal — mantenha em segredo, é como se fosse uma "chave"
+  const TOPIC = "amor-47ynavw6xr";
+  const URL = "https://ntfy.sh/" + TOPIC;
+
+  const btn = document.getElementById("sendBtn");
+  const status = document.getElementById("status");
+  const wakeStatus = document.getElementById("wakeStatus");
+
+  // Mantém a tela sempre ativa (não apaga nem trava sozinha)
+  let wakeLock = null;
+  async function ativarWakeLock() {
+    try {
+      if ("wakeLock" in navigator) {
+        wakeLock = await navigator.wakeLock.request("screen");
+        wakeStatus.textContent = "🔆 Tela sempre ativa";
+        wakeLock.addEventListener("release", () => {
+          wakeStatus.textContent = "";
+        });
+      } else {
+        wakeStatus.textContent = "";
+      }
+    } catch (err) {
+      wakeStatus.textContent = "";
+    }
+  }
+  ativarWakeLock();
+  // Reativa se o navegador soltar o wake lock ao voltar de segundo plano
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") ativarWakeLock();
+  });
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    if (navigator.vibrate) navigator.vibrate(80);
+    status.textContent = "Enviando...";
+    status.className = "";
+    try {
+      await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Title": "Ajuda com o Lucca",
+          "Tags": "baby",
+          "Priority": "urgent"
+        },
+        body: "Vem aqui, preciso de você com o Lucca 🍼"
+      });
+      status.textContent = "Chamado enviado ✅";
+      status.className = "ok";
+    } catch (err) {
+      status.textContent = "Sem internet — tente de novo";
+    } finally {
+      setTimeout(() => { btn.disabled = false; status.textContent = ""; }, 2000);
+    }
+  });
+</script>
+</body>
+</html>
